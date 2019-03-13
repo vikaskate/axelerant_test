@@ -1,0 +1,11 @@
+# The {api_key} element in the URL represents as $api_key in the controller method.
+# The {nid} element in the URL represents as $nid in the controller method.
+axelerant_test.node_json:
+  path: '/page_json/{api_key}/{nid}'
+  defaults:
+    _controller: '\Drupal\axelerant_test\Controller\MyController::getNodeAsJson'
+    # Provide default value to both arguments.
+    api_key: ''
+    nid: ''
+  requirements:
+    _permission: 'access content'

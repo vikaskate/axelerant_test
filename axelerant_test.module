@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * Module file for axelerant_test.
+ */
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ * @param $form_id
+ *   form id of the current form 
+ */
+function axelerant_test_form_alter(&$form, &$form_state, $form_id) {
+
+	// If this is the Site Information form, we add the text field for storing
+	// site api key
+    if ($form_id == 'system_site_information_settings') {
+
+    	$site_api_key = \Drupal::config('system.siteapikey')->get('key');	
+
+    	$form['api_key_container'] = [
+    		'#type' => 'details',
+    		'#title' => 'Api Key Details',
+    		'#open' => TRUE,
+    		'#weight' => -1
+    	];
+
+    	$form['api_key_container']['siteapikey'] = [
+    		'#type' => 'textfield',
+    		'#title' => 'Site API Key',
+    		'#description' => 'Please specify the api key for the site.',
+    		'#required' => TRUE,
+    		'#default_value' => $site_api_key ? $site_api_key : 'No API Key yet'
+    	];
+
+    	if ($site_api_key) {
+    		$form['actions']['submit']['#value'] =  'Update Configuration';
+    	}
+
+    	// Custom submit callback function to store the site api key
+    	// as a system variable.
+    	$form['#submit'][] = 'siteInfoCustomSubmit';
+
+    }
+
+    return $form;
+
+}
+
+/**
+ * Provides custom submission handler to set site api key as system variable.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ */
+function siteInfoCustomSubmit($form, &$form_state) {
+
+	// Get the value of site api key entered by user
+	$api_key = $form_state->getValue('siteapikey');
+
+	// Set the entered api key as a system variable
+	$config = \Drupal::service('config.factory')->getEditable('system.siteapikey');
+	$config->set('key', $api_key);
+    $res = $config->save();
+
+    // Noify the user about the key is saved successfully
+    drupal_set_message("Site api key has been saved with value: " . $api_key);
+}
